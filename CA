@@ -1,0 +1,59 @@
+OpenSSL Root and Intermediate CA
+https://jamielinux.com/docs/openssl-certificate-authority/appendix/index.html
+
+# Install Latest OpenSSL
+apt-get install openssl
+
+----- ROOT CA Certificate -----
+# Create Root CA Private Key
+openssl genrsa -aes256 -out private/ca.key.pem 4096
+
+# Edit Root CA OpenSSL Configuration File
+vim /root/CA/root/openssl.cnf
+
+# Create Root CA Certificate
+openssl req -config openssl.cnf -key private/ca.key.pem -new -x509 -days 7300 -sha256 -extensions v3_ca -out certs/ca.cert.pem
+
+# View Root CA Certificate
+openssl x509 -noout -text -in certs/ca.cert.pem
+
+----- Intermediate CA Certificate -----
+# Edit Intermediate CA OpenSSL Configuration File
+vim /root/CA/intermediate/openssl.cnf 
+
+# Create Intermediate CA Private Key
+openssl genrsa -aes256 -out intermediate/private/intermediate.key.pem 4096
+
+# Create Intermediate CA Certificate Signing Request from Intermediate CA
+openssl req -config intermediate/openssl.cnf -new -sha256 -key intermediate/private/intermediate.key.pem -out intermediate/csr/intermediate.csr.pem
+
+# Sign Intermediate CA Certificate by Root CA
+openssl ca -config openssl.cnf -extensions v3_intermediate_ca -days 3650 -notext -md sha256 -in intermediate/csr/intermediate.csr.pem -out intermediate/certs/intermediate.cert.pem
+
+# View Intermediate CA Certificate
+openssl x509 -noout -text -in intermediate/certs/intermediate.cert.pem
+
+# Verify Intermediate CA Certificate Trust Chain to Root CA
+openssl verify -CAfile certs/ca.cert.pem intermediate/certs/intermediate.cert.pem
+
+# Create Chained Intermediate CA Certificate
+cat intermediate/certs/intermediate.cert.pem certs/ca.cert.pem > intermediate/certs/ca-chain.cert.pem
+
+----- Identity Certificate -----
+# Create Identity Certificate Private Key
+openssl genrsa -aes256 -out intermediate/private/172.16.30.1.key.pem 2048
+
+# Create Identity Certificate Certificate Signing Request from Intermediate CA
+openssl req -config intermediate/openssl.cnf -key intermediate/private/172.16.30.1.key.pem -new -sha256 -out intermediate/csr/172.16.30.1.csr.pem
+
+# Sign Identity Certificate by Intermediate CA
+openssl ca -config intermediate/openssl.cnf -extensions server_cert -days 375 -notext -md sha256 -in intermediate/csr/172.16.30.1.csr.pem -out intermediate/certs/172.16.30.1.cert.pem
+
+# View Identity Certificate
+openssl x509 -noout -text -in intermediate/certs/172.16.30.1.cert.pem
+
+# Verify Identity Certificate Trust Chain
+openssl verify -CAfile intermediate/certs/ca-chain.cert.pem intermediate/certs/172.16.30.1.cert.pem
+
+# Create PKCS12 format certificate to import into ASA and other appliances requiring both the certificate and key in one file
+openssl pkcs12 -export -out certs/172.16.30.1.pkcs12 -inkey private/172.16.30.1.key.pem -in certs/172.16.30.1.cert.pem -certfile certs/intermediate.cert.pem
