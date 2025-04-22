@@ -13,3 +13,6 @@ https://github.com/0xk1h0/ChatGPT_DAN
 https://embracethered.com/blog/
 
 https://devanshbatham.hashnode.dev/prompt-injection-attacks-for-dummies
+
+Escape Room
+https://pangea.cloud/landing/ai-escape-room/
