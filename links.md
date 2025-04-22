@@ -14,5 +14,7 @@ https://embracethered.com/blog/
 
 https://devanshbatham.hashnode.dev/prompt-injection-attacks-for-dummies
 
+https://github.com/ottosulin/awesome-ai-security
+
 Escape Room
 https://pangea.cloud/landing/ai-escape-room/
